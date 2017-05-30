@@ -29,45 +29,93 @@ export default class Game extends React.Component {
           ]
         }
       ],
-      fallingElement: {
+      fallingObject: {
         tiles: []
       },
       fallingInterval: "",
       gameSpeed: 1000,
-      onFalling: this.onFalling.bind(this)
+      onFalling: this.onFalling.bind(this),
+      onLanded: this.onLanded.bind(this),
+      handleKeys: this.handleKeys.bind(this),
+      moveObject: this.moveObject.bind(this)
     };
   }
 
   onFalling () {
-    let tiles = this.state.fallingElement.tiles;
-    let lowestTile = 0;
+    //console.log("falling");
+    this.state.moveObject("down");
+  }
 
-    for (var i = 0; i < tiles.length; i++) {
-      let actualY = tiles[i].y ++;
-      lowestTile = Math.max(lowestTile, actualY);
-    }
-
-    // TODO: use tiles from scene instead of boardHeight
-    if (lowestTile + 1 < this.state.boardHeight) {
-      console.log("falling");
-      this.setState({
-        fallingElement: {
-          tiles
-        }
-      });
-    } else {
-      clearInterval(this.state.fallingInterval);
-    }
+  onLanded () {
+    console.log("landed");
+    clearInterval(this.state.fallingInterval);
   }
 
   componentDidMount() {
     this.setState({
-      fallingElement: this.state.shapes[0]
+      fallingObject: this.state.shapes[0]
     });
 
     this.state.fallingInterval = setInterval(this.state.onFalling, this.state.gameSpeed);
+    document.addEventListener("keydown", this.state.handleKeys, false);
   }
 
+  moveObject (dir) {
+    let tiles = this.state.fallingObject.tiles;
+    let boundariesRight = Math.max.apply(Math,tiles.map(function(o){return o.x;}));
+    let boundariesLeft = Math.min.apply(Math,tiles.map(function(o){return o.x;}));
+    let boundariesBottom = Math.max.apply(Math,tiles.map(function(o){return o.y;}));
+    if (dir === "right") {
+      if (boundariesRight + 1 < this.state.boardWidth) {
+        for (var i = 0; i < tiles.length; i++) {
+          tiles[i].x ++;
+        }
+      }
+    } else if (dir === "left") {
+      if (boundariesLeft > 0) {
+        for (var i = 0; i < tiles.length; i++) {
+          tiles[i].x --;
+        }
+      }
+    } else if (dir === "down") {
+      if (boundariesBottom + 1 < this.state.boardHeight) {
+        for (var i = 0; i < tiles.length; i++) {
+          tiles[i].y ++;
+        }
+      } else {
+        this.state.onLanded();
+      }
+    }
+
+    this.setState({
+      fallingObject: {
+        tiles
+      }
+    });
+  }
+
+  handleKeys (event) {
+    console.log(event);
+
+    switch (event.key) {
+      case "ArrowLeft":
+        this.state.moveObject("left");
+        break;
+      case "ArrowRight":
+        this.state.moveObject("right");
+        break;
+      case "ArrowUp":
+        console.log("ArrowUp");
+        break;
+      case "ArrowDown":
+        this.state.moveObject("down");
+        break;
+
+      default:
+        break;
+    }
+
+  }
   render() {
     let gameWidth = this.state.boardWidth * this.state.tileWidth;
     let gameHeight = this.state.boardHeight * this.state.tileHeight;
@@ -102,7 +150,7 @@ export default class Game extends React.Component {
           })
         };
         {
-          this.state.fallingElement.tiles.map(function(item, index) {
+          this.state.fallingObject.tiles.map(function(item, index) {
             return <GameTile
               key={index}
               tileObj={item}
