@@ -68,11 +68,17 @@ export default class Game extends React.Component {
       gameSpeed: 1000,
       onFalling: this.onFalling.bind(this),
       onLanded: this.onLanded.bind(this),
+      onEnd: this.onEnd.bind(this),
       drop: this.drop.bind(this),
       handleKeys: this.handleKeys.bind(this),
       moveObject: this.moveObject.bind(this),
       rotateObject: this.rotateObject.bind(this)
     };
+  }
+
+  onEnd () {
+    console.log("end");
+    clearInterval(this.state.fallingInterval);
   }
 
   onFalling () {
@@ -111,6 +117,24 @@ export default class Game extends React.Component {
       fallingObject
     });
 
+    let pile = this.state.pile;
+    // check if move is possible
+    for (let i = 0; i < tiles.length; i++) {
+      let tile = tiles[i];
+
+      for (let j = 0; j < pile.tiles.length; j++) {
+        let pileElem = pile.tiles[j];
+
+        if (pileElem.x === tile.x) {
+          // tile is beside on pile
+          if (pileElem.y === tile.y) {
+            this.state.onEnd();
+            return;
+          }
+        }
+      }
+    }
+
     clearInterval(this.state.fallingInterval);
     this.state.fallingInterval = setInterval(this.state.onFalling, this.state.gameSpeed);
   }
@@ -128,7 +152,25 @@ export default class Game extends React.Component {
     let boundariesLeft = Math.min.apply(Math,tiles.map(function(o){return o.x;}));
     let boundariesBottom = Math.max.apply(Math,tiles.map(function(o){return o.y;}));
     if (dir === "right") {
+
+
       if (boundariesRight + 1 < this.state.boardWidth) {
+
+        // check if falling tiles are already touching pile of tiles
+        for (let i = 0; i < tiles.length; i++) {
+          let tile = tiles[i];
+
+          for (let j = 0; j < pile.tiles.length; j++) {
+            let pileElem = pile.tiles[j];
+
+            if (pileElem.y === tile.y) {
+              // tile is beside on pile
+              if (pileElem.x === tile.x + 1) {
+                return;
+              }
+            }
+          }
+        }
         for (let i = 0; i < tiles.length; i++) {
           tiles[i].x ++;
         }
@@ -139,7 +181,25 @@ export default class Game extends React.Component {
         }
       });
     } else if (dir === "left") {
+
+
       if (boundariesLeft > 0) {
+        // check if falling tiles are already touching pile of tiles
+        for (let i = 0; i < tiles.length; i++) {
+          let tile = tiles[i];
+
+          for (let j = 0; j < pile.tiles.length; j++) {
+            let pileElem = pile.tiles[j];
+
+            if (pileElem.y === tile.y) {
+              // tile is beside on pile
+              if (pileElem.x === tile.x - 1) {
+                return;
+              }
+            }
+          }
+        }
+
         for (let i = 0; i < tiles.length; i++) {
           tiles[i].x --;
         }
