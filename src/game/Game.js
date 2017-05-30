@@ -10,7 +10,9 @@ export default class Game extends React.Component {
       boardHeight: 10,
       tileWidth: 20,
       tileHeight: 20,
-      tiles: [{"x": 9, "y": 9, "fill": "green"}],
+      pile: {
+        tiles: [{"x": 9, "y": 9, "fill": "green"}]
+      },
       shapes: [
         {
           name: "triangle",
@@ -82,7 +84,7 @@ export default class Game extends React.Component {
     console.log("landed");
     clearInterval(this.state.fallingInterval);
     let fallingTiles = this.state.fallingObject.tiles;
-    let tiles = this.state.tiles;
+    let tiles = this.state.pile.tiles;
 
     for (let i = 0; i < fallingTiles.length; i++) {
       tiles.push(fallingTiles[i]);
@@ -99,7 +101,8 @@ export default class Game extends React.Component {
     let tiles = [];
 
     for (let i = 0; i < shapes[randomTile].tiles.length; i++) {
-      tiles.push(JSON.parse(JSON.stringify(shapes[randomTile].tiles[i])));
+      tiles.push(Object.assign({}, shapes[randomTile].tiles[i]));
+      //tiles.push(JSON.parse(JSON.stringify(shapes[randomTile].tiles[i])));
     }
     let fallingObject = {};
     fallingObject.tiles = tiles;
@@ -120,12 +123,13 @@ export default class Game extends React.Component {
 
   moveObject (dir) {
     let tiles = this.state.fallingObject.tiles;
+    let pile = this.state.pile;
     let boundariesRight = Math.max.apply(Math,tiles.map(function(o){return o.x;}));
     let boundariesLeft = Math.min.apply(Math,tiles.map(function(o){return o.x;}));
     let boundariesBottom = Math.max.apply(Math,tiles.map(function(o){return o.y;}));
     if (dir === "right") {
       if (boundariesRight + 1 < this.state.boardWidth) {
-        for (var i = 0; i < tiles.length; i++) {
+        for (let i = 0; i < tiles.length; i++) {
           tiles[i].x ++;
         }
       }
@@ -136,7 +140,7 @@ export default class Game extends React.Component {
       });
     } else if (dir === "left") {
       if (boundariesLeft > 0) {
-        for (var i = 0; i < tiles.length; i++) {
+        for (let i = 0; i < tiles.length; i++) {
           tiles[i].x --;
         }
       }
@@ -146,8 +150,26 @@ export default class Game extends React.Component {
         }
       });
     } else if (dir === "down") {
+
+      // check if falling tiles are already touching pile of tiles
+      for (let i = 0; i < tiles.length; i++) {
+        let tile = tiles[i];
+
+        for (let j = 0; j < pile.tiles.length; j++) {
+          let pileElem = pile.tiles[j];
+
+          if (pileElem.x === tile.x) {
+            // tile is landed on pile
+            if (pileElem.y === tile.y + 1) {
+              this.state.onLanded();
+              return;
+            }
+          }
+        }
+
+      }
       if (boundariesBottom + 1 < this.state.boardHeight) {
-        for (var i = 0; i < tiles.length; i++) {
+        for (let i = 0; i < tiles.length; i++) {
           tiles[i].y ++;
         }
         this.setState({
@@ -195,7 +217,7 @@ export default class Game extends React.Component {
 
     //console.log(width, height, cx, cy, rotation);
 
-    for (var i = 0; i < tiles.length; i++) {
+    for (let i = 0; i < tiles.length; i++) {
       let x = tiles[i].x;
       let y = tiles[i].y;
 
@@ -241,8 +263,8 @@ export default class Game extends React.Component {
 
     let bgArray = [];
 
-    for (var i = 0; i < this.state.boardHeight; i++) {
-      for (var j = 0; j < this.state.boardWidth; j++) {
+    for (let i = 0; i < this.state.boardHeight; i++) {
+      for (let j = 0; j < this.state.boardWidth; j++) {
         let bgTile = {
           "id": (i * this.state.boardWidth + j),
           "x": i,
@@ -267,7 +289,7 @@ export default class Game extends React.Component {
           })
         }
         {
-          this.state.tiles.map(function(item, index) {
+          this.state.pile.tiles.map(function(item, index) {
             return <GameTile
               key={index}
               tileObj={item}
