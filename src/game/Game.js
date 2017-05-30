@@ -32,12 +32,14 @@ export default class Game extends React.Component {
       fallingObject: {
         tiles: []
       },
+      rotation: 0,
       fallingInterval: "",
       gameSpeed: 1000,
       onFalling: this.onFalling.bind(this),
       onLanded: this.onLanded.bind(this),
       handleKeys: this.handleKeys.bind(this),
-      moveObject: this.moveObject.bind(this)
+      moveObject: this.moveObject.bind(this),
+      rotateObject: this.rotateObject.bind(this)
     };
   }
 
@@ -47,7 +49,7 @@ export default class Game extends React.Component {
   }
 
   onLanded () {
-    console.log("landed");
+    //console.log("landed");
     clearInterval(this.state.fallingInterval);
   }
 
@@ -94,9 +96,58 @@ export default class Game extends React.Component {
     });
   }
 
-  handleKeys (event) {
-    console.log(event);
+  rotate(cx, cy, x, y, angle) {
+    let radians = (Math.PI / 180) * angle,
+      cos = Math.cos(radians),
+      sin = Math.sin(radians),
+      nx = (cos * (x - cx)) + (sin * (y - cy)) + cx,
+      ny = (cos * (y - cy)) - (sin * (x - cx)) + cy;
+    return [nx, ny];
+  }
 
+  rotateObject () {
+    let tiles = this.state.fallingObject.tiles;
+    let boundariesRight = Math.max.apply(Math,tiles.map(function(o){return o.x;}));
+    let boundariesLeft = Math.min.apply(Math,tiles.map(function(o){return o.x;}));
+    let boundariesBottom = Math.max.apply(Math,tiles.map(function(o){return o.y;}));
+    let boundariesTop = Math.min.apply(Math,tiles.map(function(o){return o.y;}));
+
+    let width = Math.round(boundariesRight - boundariesLeft);
+    let height = Math.round(boundariesBottom - boundariesTop);
+    let cx = boundariesRight - Math.round(width / 2);
+    let cy = boundariesBottom - Math.round(height / 2);
+    let rotation = this.state.rotation || 0;
+
+    // TODO correct rotation
+    if (width % 2 === 1) {
+      if (rotation % 4 < 3) {
+        cy ++;
+      } else if (rotation % 4 > 1) {
+        cx ++;
+      }
+    }
+
+    //console.log(width, height, cx, cy, rotation);
+
+    for (var i = 0; i < tiles.length; i++) {
+      let x = tiles[i].x;
+      let y = tiles[i].y;
+
+      let rotated = this.rotate(cx, cy, x, y, -90);
+      tiles[i].x = rotated[0];
+      tiles[i].y = rotated[1];
+    }
+    rotation ++;
+
+    this.setState({
+      fallingObject: {
+        tiles
+      },
+      rotation
+    });
+  }
+
+  handleKeys (event) {
     switch (event.key) {
       case "ArrowLeft":
         this.state.moveObject("left");
@@ -105,7 +156,7 @@ export default class Game extends React.Component {
         this.state.moveObject("right");
         break;
       case "ArrowUp":
-        console.log("ArrowUp");
+        this.state.rotateObject();
         break;
       case "ArrowDown":
         this.state.moveObject("down");
