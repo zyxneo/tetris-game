@@ -13,8 +13,8 @@ export default class Game extends React.Component {
       tiles: [
         {
           "id": 0,
-          "x": 1,
-          "y": 2,
+          "x": 8,
+          "y": 9,
           "fill": "#39f",
         }
       ],
@@ -29,10 +29,43 @@ export default class Game extends React.Component {
           ]
         }
       ],
-      get fallingElement() {
-        return this.shapes[0];
-      }
+      fallingElement: {
+        tiles: []
+      },
+      fallingInterval: "",
+      gameSpeed: 1000,
+      onFalling: this.onFalling.bind(this)
     };
+  }
+
+  onFalling () {
+    let tiles = this.state.fallingElement.tiles;
+    let lowestTile = 0;
+
+    for (var i = 0; i < tiles.length; i++) {
+      let actualY = tiles[i].y ++;
+      lowestTile = Math.max(lowestTile, actualY);
+    }
+
+    // TODO: use tiles from scene instead of boardHeight
+    if (lowestTile + 1 < this.state.boardHeight) {
+      console.log("falling");
+      this.setState({
+        fallingElement: {
+          tiles
+        }
+      });
+    } else {
+      clearInterval(this.state.fallingInterval);
+    }
+  }
+
+  componentDidMount() {
+    this.setState({
+      fallingElement: this.state.shapes[0]
+    });
+
+    this.state.fallingInterval = setInterval(this.state.onFalling, this.state.gameSpeed);
   }
 
   render() {
