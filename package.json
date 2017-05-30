@@ -1,0 +1,61 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "test",
+  "dependencies": {
+    "autoprefixer": "6.7.3",
+    "babel-core": "6.17.0",
+    "babel-loader": "6.2.5",
+    "babel-plugin-add-module-exports": "0.2.1",
+    "babel-plugin-react-html-attrs": "2.0.0",
+    "babel-plugin-transform-class-properties": "6.16.0",
+    "babel-plugin-transform-decorators-legacy": "1.3.4",
+    "babel-polyfill": "6.23.0",
+    "babel-preset-es2015": "6.16.0",
+    "babel-preset-latest": "6.22.0",
+    "babel-preset-react": "6.16.0",
+    "babel-preset-stage-0": "6.16.0",
+    "cross-env": "3.1.3",
+    "css-loader": "0.25.0",
+    "express": "4.15.2",
+    "extract-text-webpack-plugin": "2.1.0",
+    "file-loader": "0.11.1",
+    "jsx-loader": "0.13.2",
+    "node-sass": "4.5.0",
+    "postcss-load-config": "1.2.0",
+    "postcss-loader": "1.3.0",
+    "react": "15.3.2",
+    "react-dom": "15.3.2",
+    "react-hot-loader": "3.0.0-beta.6",
+    "react-router": "3.0.2",
+    "sass-loader": "6.0.0",
+    "serve-static": "1.12.1",
+    "style-loader": "0.16.1",
+    "url-loader": "0.5.8",
+    "webpack": "2.2.1",
+    "xml2js": "0.4.17"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "2.4.2"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "dev": "webpack-dev-server --hot --history-api-fallback --open",
+    "build": "cross-env NODE_ENV=production webpack --config ./webpack.prod.config.js --progress --colors",
+    "babel": "babel",
+    "webpack": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/test.git"
+  },
+  "keywords": [
+    "test"
+  ],
+  "author": "zyxneo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/test/issues"
+  },
+  "homepage": "https://github.com/test#readme"
+}
