@@ -1,0 +1,6 @@
+.game {
+  &__svg {
+    border: 2px solid #333;
+    max-height: calc(100vh - 60px);
+  }
+}

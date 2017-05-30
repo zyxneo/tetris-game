@@ -1,13 +1,13 @@
 import React from "react";
+import Game from "../game/Game";
+
 
 export default class HomePage extends React.Component {
   render() {
 
       return (
         <div class="container">
-          <h1>HomePage</h1>
-
-          <h3>Under development</h3>
+          <Game/>
         </div>
       )
   }
