@@ -10,14 +10,7 @@ export default class Game extends React.Component {
       boardHeight: 10,
       tileWidth: 20,
       tileHeight: 20,
-      tiles: [
-        {
-          "id": 0,
-          "x": 8,
-          "y": 9,
-          "fill": "#39f",
-        }
-      ],
+      tiles: [{"x": 9, "y": 9, "fill": "green"}],
       shapes: [
         {
           name: "triangle",
@@ -26,6 +19,42 @@ export default class Game extends React.Component {
             {"x": 0, "y": 1, "fill": "orange"},
             {"x": 1, "y": 1, "fill": "orange"},
             {"x": 2, "y": 1, "fill": "orange"}
+          ]
+        },
+        {
+          name: "rectangle",
+          tiles: [
+            {"x": 0, "y": 0, "fill": "skyblue"},
+            {"x": 1, "y": 0, "fill": "skyblue"},
+            {"x": 0, "y": 1, "fill": "skyblue"},
+            {"x": 1, "y": 1, "fill": "skyblue"}
+          ]
+        },
+        {
+          name: "line",
+          tiles: [
+            {"x": 0, "y": 0, "fill": "red"},
+            {"x": 1, "y": 0, "fill": "red"},
+            {"x": 2, "y": 0, "fill": "red"},
+            {"x": 3, "y": 0, "fill": "red"}
+          ]
+        },
+        {
+          name: "S-shape",
+          tiles: [
+            {"x": 0, "y": 0, "fill": "rebeccapurple"},
+            {"x": 1, "y": 0, "fill": "rebeccapurple"},
+            {"x": 1, "y": 1, "fill": "rebeccapurple"},
+            {"x": 2, "y": 1, "fill": "rebeccapurple"}
+          ]
+        },
+        {
+          name: "Z-shape",
+          tiles: [
+            {"x": 0, "y": 1, "fill": "hotpink"},
+            {"x": 1, "y": 1, "fill": "hotpink"},
+            {"x": 1, "y": 0, "fill": "hotpink"},
+            {"x": 2, "y": 0, "fill": "hotpink"}
           ]
         }
       ],
@@ -37,6 +66,7 @@ export default class Game extends React.Component {
       gameSpeed: 1000,
       onFalling: this.onFalling.bind(this),
       onLanded: this.onLanded.bind(this),
+      drop: this.drop.bind(this),
       handleKeys: this.handleKeys.bind(this),
       moveObject: this.moveObject.bind(this),
       rotateObject: this.rotateObject.bind(this)
@@ -44,21 +74,47 @@ export default class Game extends React.Component {
   }
 
   onFalling () {
-    //console.log("falling");
+    console.log("falling");
     this.state.moveObject("down");
   }
 
   onLanded () {
-    //console.log("landed");
+    console.log("landed");
     clearInterval(this.state.fallingInterval);
+    let fallingTiles = this.state.fallingObject.tiles;
+    let tiles = this.state.tiles;
+
+    for (let i = 0; i < fallingTiles.length; i++) {
+      tiles.push(fallingTiles[i]);
+    }
+
+    this.setState({tiles});
+    this.state.drop();
+  }
+
+  drop () {
+    console.log("drop");
+    let shapes = this.state.shapes;
+    let randomTile = Math.floor(shapes.length * Math.random());
+    let tiles = [];
+
+    for (let i = 0; i < shapes[randomTile].tiles.length; i++) {
+      tiles.push(JSON.parse(JSON.stringify(shapes[randomTile].tiles[i])));
+    }
+    let fallingObject = {};
+    fallingObject.tiles = tiles;
+
+    this.setState({
+      fallingObject
+    });
+
+    clearInterval(this.state.fallingInterval);
+    this.state.fallingInterval = setInterval(this.state.onFalling, this.state.gameSpeed);
   }
 
   componentDidMount() {
-    this.setState({
-      fallingObject: this.state.shapes[0]
-    });
+    this.state.drop();
 
-    this.state.fallingInterval = setInterval(this.state.onFalling, this.state.gameSpeed);
     document.addEventListener("keydown", this.state.handleKeys, false);
   }
 
@@ -73,27 +129,37 @@ export default class Game extends React.Component {
           tiles[i].x ++;
         }
       }
+      this.setState({
+        fallingObject: {
+          tiles
+        }
+      });
     } else if (dir === "left") {
       if (boundariesLeft > 0) {
         for (var i = 0; i < tiles.length; i++) {
           tiles[i].x --;
         }
       }
+      this.setState({
+        fallingObject: {
+          tiles
+        }
+      });
     } else if (dir === "down") {
       if (boundariesBottom + 1 < this.state.boardHeight) {
         for (var i = 0; i < tiles.length; i++) {
           tiles[i].y ++;
         }
+        this.setState({
+          fallingObject: {
+            tiles
+          }
+        });
       } else {
         this.state.onLanded();
       }
     }
 
-    this.setState({
-      fallingObject: {
-        tiles
-      }
-    });
   }
 
   rotate(cx, cy, x, y, angle) {
@@ -199,7 +265,17 @@ export default class Game extends React.Component {
               height={tileHeight}
             />
           })
-        };
+        }
+        {
+          this.state.tiles.map(function(item, index) {
+            return <GameTile
+              key={index}
+              tileObj={item}
+              width={tileWidth}
+              height={tileHeight}
+            />
+          })
+        }
         {
           this.state.fallingObject.tiles.map(function(item, index) {
             return <GameTile
@@ -209,7 +285,7 @@ export default class Game extends React.Component {
               height={tileHeight}
             />
           })
-        };
+        }
 
         </svg>
       </div>
