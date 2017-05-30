@@ -11,7 +11,7 @@ export default class Game extends React.Component {
       tileWidth: 20,
       tileHeight: 20,
       pile: {
-        tiles: [{"x": 9, "y": 9, "fill": "green"}]
+        tiles: []
       },
       shapes: [
         {
@@ -58,6 +58,24 @@ export default class Game extends React.Component {
             {"x": 1, "y": 0, "fill": "hotpink"},
             {"x": 2, "y": 0, "fill": "hotpink"}
           ]
+        },
+        {
+          name: "L-shape",
+          tiles: [
+            {"x": 0, "y": 1, "fill": "salmon"},
+            {"x": 1, "y": 1, "fill": "salmon"},
+            {"x": 2, "y": 0, "fill": "salmon"},
+            {"x": 2, "y": 1, "fill": "salmon"}
+          ]
+        },
+        {
+          name: "flipped L-shape",
+          tiles: [
+            {"x": 0, "y": 0, "fill": "tomato"},
+            {"x": 0, "y": 1, "fill": "tomato"},
+            {"x": 1, "y": 1, "fill": "tomato"},
+            {"x": 2, "y": 1, "fill": "tomato"}
+          ]
         }
       ],
       fallingObject: {
@@ -70,10 +88,61 @@ export default class Game extends React.Component {
       onLanded: this.onLanded.bind(this),
       onEnd: this.onEnd.bind(this),
       drop: this.drop.bind(this),
+      clearRow: this.clearRow.bind(this),
       handleKeys: this.handleKeys.bind(this),
       moveObject: this.moveObject.bind(this),
       rotateObject: this.rotateObject.bind(this)
     };
+  }
+
+  clearRow () {
+    console.log("clearRow");
+
+    let pile = this.state.pile;
+    let shiftLevel = 0;
+    for (let i = this.state.boardHeight; i > 0 ; i--) {
+      // in each row
+      let rowFullfilled = true;
+      let rowTiles = [];
+      for (let j = 0; j < this.state.boardWidth; j++) {
+        // in each column
+        let blockFilled = false;
+        let pileMatching;
+        for (let k = 0; k < pile.tiles.length; k++) {
+          // in each existing items
+          let pileElem = pile.tiles[k];
+
+          if (pileElem.x === j && pileElem.y === i-1) {
+            // found
+            blockFilled = true;
+            pileMatching = pileElem;
+            pileElem.fill = "yellow";
+          }
+        }
+        if (blockFilled) {
+          rowTiles.push(pileMatching);
+        } else {
+          rowFullfilled = false;
+          //continue;
+        }
+      }
+      if (rowFullfilled) {
+        shiftLevel ++;
+        console.log("rowFullfilled", rowTiles);
+        for (let l = 0; l < rowTiles.length; l++) {
+          let element = rowTiles[l].fill = "darkslategray";
+          let tiles = this.state.pile.tiles;
+          let index = tiles.indexOf(rowTiles[l])
+          tiles.splice(index, 1);
+          this.setState({tiles});
+        }
+      } else {
+        for (let l = 0; l < rowTiles.length; l++) {
+          let element = rowTiles[l];
+          element.y += shiftLevel;
+        }
+      }
+    }
   }
 
   onEnd () {
@@ -82,12 +151,12 @@ export default class Game extends React.Component {
   }
 
   onFalling () {
-    console.log("falling");
+    //console.log("falling");
     this.state.moveObject("down");
   }
 
   onLanded () {
-    console.log("landed");
+    //console.log("landed");
     clearInterval(this.state.fallingInterval);
     let fallingTiles = this.state.fallingObject.tiles;
     let tiles = this.state.pile.tiles;
@@ -96,12 +165,13 @@ export default class Game extends React.Component {
       tiles.push(fallingTiles[i]);
     }
 
-    this.setState({tiles});
+    //this.setState({tiles});
+    this.state.clearRow();
     this.state.drop();
   }
 
   drop () {
-    console.log("drop");
+    //console.log("drop");
     let shapes = this.state.shapes;
     let randomTile = Math.floor(shapes.length * Math.random());
     let tiles = [];
@@ -255,10 +325,10 @@ export default class Game extends React.Component {
 
   rotateObject () {
     let tiles = this.state.fallingObject.tiles;
-    let boundariesRight = Math.max.apply(Math,tiles.map(function(o){return o.x;}));
-    let boundariesLeft = Math.min.apply(Math,tiles.map(function(o){return o.x;}));
-    let boundariesBottom = Math.max.apply(Math,tiles.map(function(o){return o.y;}));
-    let boundariesTop = Math.min.apply(Math,tiles.map(function(o){return o.y;}));
+    let boundariesRight = Math.round(Math.max.apply(Math,tiles.map(function(o){return o.x;})));
+    let boundariesLeft = Math.round(Math.min.apply(Math,tiles.map(function(o){return o.x;})));
+    let boundariesBottom = Math.round(Math.max.apply(Math,tiles.map(function(o){return o.y;})));
+    let boundariesTop = Math.round(Math.min.apply(Math,tiles.map(function(o){return o.y;})));
 
     let width = Math.round(boundariesRight - boundariesLeft);
     let height = Math.round(boundariesBottom - boundariesTop);
@@ -278,12 +348,12 @@ export default class Game extends React.Component {
     //console.log(width, height, cx, cy, rotation);
 
     for (let i = 0; i < tiles.length; i++) {
-      let x = tiles[i].x;
-      let y = tiles[i].y;
+      let x = Math.round(tiles[i].x);
+      let y = Math.round(tiles[i].y);
 
       let rotated = this.rotate(cx, cy, x, y, -90);
-      tiles[i].x = rotated[0];
-      tiles[i].y = rotated[1];
+      tiles[i].x = Math.round(rotated[0]);
+      tiles[i].y = Math.round(rotated[1]);
     }
     rotation ++;
 
