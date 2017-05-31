@@ -1,6 +1,33 @@
+$shadow-color: red;
+
+
+* {
+   box-sizing: border-box;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  background: #000;
+}
+
+.layout {
+  min-height: 100vh;
+}
+
 .game {
   &__svg {
-    border: 2px solid #333;
-    max-height: calc(100vh - 60px);
+    font-family: 'Luckiest Guy', cursive;
+    color: #fff;
+    max-height: 100vh;
   }
+}
+
+.big-text {
+  font-size: 20px;
+  text-shadow: 1px 1px 0 $shadow-color, 2px 2px 0 $shadow-color, 3px 3px 0 $shadow-color;
+}
+
+.label-text {
+  font-size: 8px;
+  letter-spacing: 5px;
 }

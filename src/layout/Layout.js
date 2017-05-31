@@ -1,5 +1,4 @@
 require("./sanitize.scss");
-require("./layout.scss");
 
 import React from "react";
 import Header from "./Header";
@@ -9,11 +8,7 @@ export default class Layout extends React.Component {
   render() {
     return (
       <div class="layout">
-        <Header/>
-        <main class="main">
-          {this.props.children}
-        </main>
-        <Footer />
+        {this.props.children}
       </div>
     )
   }

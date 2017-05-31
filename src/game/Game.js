@@ -6,10 +6,24 @@ export default class Game extends React.Component {
   constructor() {
     super();
     this.state = {
+      // sizes:
       boardWidth: 10,
       boardHeight: 10,
       tileWidth: 20,
       tileHeight: 20,
+      sidebarWidth: 200,
+      headerHeight: 50,
+      footerHeight: 20,
+
+      // user properties:
+      level: 1,
+      levelScoreRequirement: 500,
+      score: 0,
+      tileValue: 10,
+      lines: 0,
+      combo: 0,
+
+      // game tiles:
       pile: {
         tiles: []
       },
@@ -84,6 +98,8 @@ export default class Game extends React.Component {
       rotation: 0,
       fallingInterval: "",
       gameSpeed: 1000,
+
+      // functions:
       onFalling: this.onFalling.bind(this),
       onLanded: this.onLanded.bind(this),
       onEnd: this.onEnd.bind(this),
@@ -100,6 +116,7 @@ export default class Game extends React.Component {
 
     let pile = this.state.pile;
     let shiftLevel = 0;
+    let combo = -1;
     for (let i = this.state.boardHeight; i > 0 ; i--) {
       // in each row
       let rowFullfilled = true;
@@ -127,22 +144,41 @@ export default class Game extends React.Component {
         }
       }
       if (rowFullfilled) {
+        // row to delete
         shiftLevel ++;
-        console.log("rowFullfilled", rowTiles);
+        this.state.lines ++;
+        combo++;
+
         for (let l = 0; l < rowTiles.length; l++) {
-          let element = rowTiles[l].fill = "darkslategray";
+          // delete elements in the tow
           let tiles = this.state.pile.tiles;
           let index = tiles.indexOf(rowTiles[l])
           tiles.splice(index, 1);
           this.setState({tiles});
         }
       } else {
+        // move elements above the gap down
         for (let l = 0; l < rowTiles.length; l++) {
           let element = rowTiles[l];
           element.y += shiftLevel;
         }
       }
     }
+
+    let score = shiftLevel * this.state.tileValue * this.state.boardWidth;
+
+    if (combo > 0) {
+      score *= combo;
+      score += this.state.score;
+      combo += this.state.combo;
+      this.setState({combo, score});
+    } else {
+      score += this.state.score;
+      this.setState({score});
+    }
+    let level = Math.floor(score / this.state.levelScoreRequirement) + 1;
+    let gameSpeed = 1000 - level * 100;
+    this.setState({level, gameSpeed});
   }
 
   onEnd () {
@@ -390,6 +426,11 @@ export default class Game extends React.Component {
     let gameHeight = this.state.boardHeight * this.state.tileHeight;
     let tileWidth = this.state.tileWidth;
     let tileHeight = this.state.tileHeight;
+    let sidebarWidth = this.state.sidebarWidth;
+    let headerHeight = this.state.headerHeight;
+    let footerHeight = this.state.footerHeight;
+    let rightSidebarCenter = sidebarWidth + gameWidth + sidebarWidth / 2;
+    let leftSidebarCenter = sidebarWidth / 2;
 
     let bgArray = [];
 
@@ -406,41 +447,61 @@ export default class Game extends React.Component {
     }
 
     return (
-      <div class="game">
-        <svg className="game__svg" version="1.1" viewBox={"0 0 " + gameWidth + " " + gameHeight}>
-        {
-          bgArray.map(function(item) {
-            return <GameTile
-              key={item.id}
-              tileObj={item}
-              width={tileWidth}
-              height={tileHeight}
-            />
-          })
-        }
-        {
-          this.state.pile.tiles.map(function(item, index) {
-            return <GameTile
-              key={index}
-              tileObj={item}
-              width={tileWidth}
-              height={tileHeight}
-            />
-          })
-        }
-        {
-          this.state.fallingObject.tiles.map(function(item, index) {
-            return <GameTile
-              key={index}
-              tileObj={item}
-              width={tileWidth}
-              height={tileHeight}
-            />
-          })
-        }
+      <svg className="game__svg" version="1.1" viewBox={"0 0 " + (gameWidth + sidebarWidth * 2)  + " " + (gameHeight + headerHeight + footerHeight)}>
 
-        </svg>
-      </div>
+      <text className="game__title big-text" x={(gameWidth + sidebarWidth * 2) / 2} y="30" textAnchor="middle">Tetris game</text>
+
+
+      <text className="game__level-label label-text" x={rightSidebarCenter} y="50" textAnchor="middle">level</text>
+      <text className="game__level big-text" x={rightSidebarCenter} y="70" textAnchor="middle">{this.state.level}</text>
+
+      <text className="game__score-label label-text" x={rightSidebarCenter} y="100" textAnchor="middle">score</text>
+      <text className="game__score big-text" x={rightSidebarCenter} y="130" textAnchor="middle">{this.state.score}</text>
+
+      <text className="game__lines-label label-text" x={leftSidebarCenter} y="50" textAnchor="middle">lines</text>
+      <text className="game__lines big-text" x={leftSidebarCenter} y="70" textAnchor="middle">{this.state.lines}</text>
+
+      <text className="game__combo-label label-text" x={leftSidebarCenter} y="100" textAnchor="middle">combo</text>
+      <text className="game__combo big-text" x={leftSidebarCenter} y="130" textAnchor="middle">{this.state.combo}</text>
+
+      {
+        bgArray.map(function(item) {
+          return <GameTile
+            key={item.id}
+            tileObj={item}
+            width={tileWidth}
+            height={tileHeight}
+            translateX={sidebarWidth}
+            translateY={headerHeight}
+          />
+        })
+      }
+      {
+        this.state.pile.tiles.map(function(item, index) {
+          return <GameTile
+            key={index}
+            tileObj={item}
+            width={tileWidth}
+            height={tileHeight}
+            translateX={sidebarWidth}
+            translateY={headerHeight}
+          />
+        })
+      }
+      {
+        this.state.fallingObject.tiles.map(function(item, index) {
+          return <GameTile
+            key={index}
+            tileObj={item}
+            width={tileWidth}
+            height={tileHeight}
+            translateX={sidebarWidth}
+            translateY={headerHeight}
+          />
+        })
+      }
+
+      </svg>
     )
   }
 }
