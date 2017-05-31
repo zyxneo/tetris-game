@@ -11,7 +11,7 @@ export default class Game extends React.Component {
       boardHeight: 18,
       tileWidth: 20,
       tileHeight: 20,
-      sidebarWidth: 200,
+      sidebarWidth: 140,
       headerHeight: 50,
       footerHeight: 20,
 
@@ -114,7 +114,8 @@ export default class Game extends React.Component {
       clearRow: this.clearRow.bind(this),
       handleKeys: this.handleKeys.bind(this),
       moveObject: this.moveObject.bind(this),
-      rotateObject: this.rotateObject.bind(this)
+      rotateObject: this.rotateObject.bind(this),
+      swapObject: this.swapObject.bind(this)
     };
   }
 
@@ -140,7 +141,7 @@ export default class Game extends React.Component {
             // found
             blockFilled = true;
             pileMatching = pileElem;
-            pileElem.fill = "yellow";
+            pileElem.fill = "#ddd";
           }
         }
         if (blockFilled) {
@@ -448,6 +449,17 @@ export default class Game extends React.Component {
     });
   }
 
+  swapObject () {
+    console.log("swap");
+    let nextObject = this.state.nextObject;
+    let parkingObject = this.state.parkingObject;
+    this.setState((prevState, props) => ({
+      nextObject: prevState.parkingObject,
+      parkingObject: prevState.nextObject
+    }));
+
+  }
+
   handleKeys (event) {
     switch (event.key) {
       case "ArrowLeft":
@@ -461,6 +473,9 @@ export default class Game extends React.Component {
         break;
       case "ArrowDown":
         this.state.moveObject("down");
+        break;
+      case "s":
+        this.state.swapObject("down");
         break;
 
       default:
@@ -496,7 +511,7 @@ export default class Game extends React.Component {
           "id": (i * this.state.boardWidth + j),
           "x": j,
           "y": i,
-          "fill": "#ddd",
+          "fill": "#333",
         };
         bgArray.push(bgTile);
       }
@@ -512,19 +527,19 @@ export default class Game extends React.Component {
 
 
       <text className="game__level-label label-text" x={rightSidebarCenter} y="150" textAnchor="middle">level</text>
-      <text className="game__level big-text" x={rightSidebarCenter} y="170" textAnchor="middle">{this.state.level}</text>
+      <text className="game__level big-text" x={rightSidebarCenter} y="180" textAnchor="middle">{this.state.level}</text>
 
-      <text className="game__score-label label-text" x={rightSidebarCenter} y="200" textAnchor="middle">score</text>
-      <text className="game__score big-text" x={rightSidebarCenter} y="230" textAnchor="middle">{this.state.score}</text>
+      <text className="game__score-label label-text" x={rightSidebarCenter} y="210" textAnchor="middle">score</text>
+      <text className="game__score big-text" x={rightSidebarCenter} y="240" textAnchor="middle">{this.state.score}</text>
 
       <text className="game__lines-label label-text" x={leftSidebarCenter} y="60" textAnchor="middle">switch (s)</text>
 
 
       <text className="game__lines-label label-text" x={leftSidebarCenter} y="150" textAnchor="middle">lines</text>
-      <text className="game__lines big-text" x={leftSidebarCenter} y="170" textAnchor="middle">{this.state.lines}</text>
+      <text className="game__lines big-text" x={leftSidebarCenter} y="180" textAnchor="middle">{this.state.lines}</text>
 
-      <text className="game__combo-label label-text" x={leftSidebarCenter} y="200" textAnchor="middle">combo</text>
-      <text className="game__combo big-text" x={leftSidebarCenter} y="230" textAnchor="middle">{this.state.combo}</text>
+      <text className="game__combo-label label-text" x={leftSidebarCenter} y="210" textAnchor="middle">combo</text>
+      <text className="game__combo big-text" x={leftSidebarCenter} y="240" textAnchor="middle">{this.state.combo}</text>
 
       {
         bgArray.map(function(item) {
@@ -581,7 +596,7 @@ export default class Game extends React.Component {
             tileObj={item}
             width={tileWidth}
             height={tileHeight}
-            translateX={leftSidebarCenter - Math.round(nextObjectWidth / 2)}
+            translateX={leftSidebarCenter - Math.round(parkingObjectWidth / 2)}
             translateY={headerHeight + 20}
           />
         })
