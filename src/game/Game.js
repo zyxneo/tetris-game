@@ -8,7 +8,7 @@ export default class Game extends React.Component {
     this.state = {
       // sizes:
       boardWidth: 10,
-      boardHeight: 10,
+      boardHeight: 18,
       tileWidth: 20,
       tileHeight: 20,
       sidebarWidth: 200,
@@ -95,6 +95,12 @@ export default class Game extends React.Component {
       fallingObject: {
         tiles: []
       },
+      nextObject: {
+        tiles: []
+      },
+      parkingObject: {
+        tiles: []
+      },
       rotation: 0,
       fallingInterval: "",
       gameSpeed: 1000,
@@ -104,6 +110,7 @@ export default class Game extends React.Component {
       onLanded: this.onLanded.bind(this),
       onEnd: this.onEnd.bind(this),
       drop: this.drop.bind(this),
+      getRandomTiles: this.getRandomTiles.bind(this),
       clearRow: this.clearRow.bind(this),
       handleKeys: this.handleKeys.bind(this),
       moveObject: this.moveObject.bind(this),
@@ -206,21 +213,61 @@ export default class Game extends React.Component {
     this.state.drop();
   }
 
-  drop () {
-    //console.log("drop");
+  getRandomTiles () {
     let shapes = this.state.shapes;
     let randomTile = Math.floor(shapes.length * Math.random());
     let tiles = [];
 
     for (let i = 0; i < shapes[randomTile].tiles.length; i++) {
       tiles.push(Object.assign({}, shapes[randomTile].tiles[i]));
-      //tiles.push(JSON.parse(JSON.stringify(shapes[randomTile].tiles[i])));
     }
+    return tiles;
+  }
+
+  drop () {
+    //console.log("drop");
+
+    // create parkingObject if not exist
+    let parkingObject = this.state.parkingObject;
+    if (parkingObject.tiles.length === 0) {
+      parkingObject = {};
+      parkingObject.tiles = this.state.getRandomTiles();
+    }
+
+    // next item
+    let nextObject = this.state.nextObject;
+    let tiles = [];
     let fallingObject = {};
+
+    // if nextObject defined, use it, unless create new one
+    if (nextObject.tiles.length === 0) {
+      nextObject = {};
+      nextObject.tiles = this.state.getRandomTiles();
+      tiles = this.state.getRandomTiles();
+    } else {
+      for (let i = 0; i < nextObject.tiles.length; i++) {
+        tiles.push(Object.assign({}, nextObject.tiles[i]));
+      }
+      nextObject.tiles = this.state.getRandomTiles();
+    }
+
     fallingObject.tiles = tiles;
 
+    // center dropped shape
+
+    let boundariesRight = Math.max.apply(Math,tiles.map(function(o){return o.x;}));
+    let boundariesLeft = Math.min.apply(Math,tiles.map(function(o){return o.x;}));
+    let shiftToCenter = this.state.boardWidth / 2 - (boundariesRight - boundariesLeft);
+    for (let i = 0; i < tiles.length; i++) {
+      let tile = tiles[i];
+      tile.x += shiftToCenter;
+    }
+
+
     this.setState({
-      fallingObject
+      fallingObject,
+      nextObject,
+      parkingObject
     });
 
     let pile = this.state.pile;
@@ -432,14 +479,23 @@ export default class Game extends React.Component {
     let rightSidebarCenter = sidebarWidth + gameWidth + sidebarWidth / 2;
     let leftSidebarCenter = sidebarWidth / 2;
 
-    let bgArray = [];
+    let nextObject = this.state.nextObject.tiles;
+    let nextObjectBoundariesRight = Math.round(Math.max.apply(Math,nextObject.map(function(o){return o.x;})));
+    let nextObjectBoundariesLeft = Math.round(Math.min.apply(Math,nextObject.map(function(o){return o.x;})));
+    let nextObjectWidth = (nextObjectBoundariesRight - nextObjectBoundariesLeft) * tileWidth;
 
+    let parkingObject = this.state.parkingObject.tiles;
+    let parkingObjectBoundariesRight = Math.round(Math.max.apply(Math,parkingObject.map(function(o){return o.x;})));
+    let parkingObjectBoundariesLeft = Math.round(Math.min.apply(Math,parkingObject.map(function(o){return o.x;})));
+    let parkingObjectWidth = (parkingObjectBoundariesRight - parkingObjectBoundariesLeft) * tileWidth;
+
+    let bgArray = [];
     for (let i = 0; i < this.state.boardHeight; i++) {
       for (let j = 0; j < this.state.boardWidth; j++) {
         let bgTile = {
           "id": (i * this.state.boardWidth + j),
-          "x": i,
-          "y": j,
+          "x": j,
+          "y": i,
           "fill": "#ddd",
         };
         bgArray.push(bgTile);
@@ -452,17 +508,23 @@ export default class Game extends React.Component {
       <text className="game__title big-text" x={(gameWidth + sidebarWidth * 2) / 2} y="30" textAnchor="middle">Tetris game</text>
 
 
-      <text className="game__level-label label-text" x={rightSidebarCenter} y="50" textAnchor="middle">level</text>
-      <text className="game__level big-text" x={rightSidebarCenter} y="70" textAnchor="middle">{this.state.level}</text>
+      <text className="game__level-label label-text" x={rightSidebarCenter} y="60" textAnchor="middle">Next</text>
 
-      <text className="game__score-label label-text" x={rightSidebarCenter} y="100" textAnchor="middle">score</text>
-      <text className="game__score big-text" x={rightSidebarCenter} y="130" textAnchor="middle">{this.state.score}</text>
 
-      <text className="game__lines-label label-text" x={leftSidebarCenter} y="50" textAnchor="middle">lines</text>
-      <text className="game__lines big-text" x={leftSidebarCenter} y="70" textAnchor="middle">{this.state.lines}</text>
+      <text className="game__level-label label-text" x={rightSidebarCenter} y="150" textAnchor="middle">level</text>
+      <text className="game__level big-text" x={rightSidebarCenter} y="170" textAnchor="middle">{this.state.level}</text>
 
-      <text className="game__combo-label label-text" x={leftSidebarCenter} y="100" textAnchor="middle">combo</text>
-      <text className="game__combo big-text" x={leftSidebarCenter} y="130" textAnchor="middle">{this.state.combo}</text>
+      <text className="game__score-label label-text" x={rightSidebarCenter} y="200" textAnchor="middle">score</text>
+      <text className="game__score big-text" x={rightSidebarCenter} y="230" textAnchor="middle">{this.state.score}</text>
+
+      <text className="game__lines-label label-text" x={leftSidebarCenter} y="60" textAnchor="middle">switch (s)</text>
+
+
+      <text className="game__lines-label label-text" x={leftSidebarCenter} y="150" textAnchor="middle">lines</text>
+      <text className="game__lines big-text" x={leftSidebarCenter} y="170" textAnchor="middle">{this.state.lines}</text>
+
+      <text className="game__combo-label label-text" x={leftSidebarCenter} y="200" textAnchor="middle">combo</text>
+      <text className="game__combo big-text" x={leftSidebarCenter} y="230" textAnchor="middle">{this.state.combo}</text>
 
       {
         bgArray.map(function(item) {
@@ -497,6 +559,30 @@ export default class Game extends React.Component {
             height={tileHeight}
             translateX={sidebarWidth}
             translateY={headerHeight}
+          />
+        })
+      }
+      {
+        this.state.nextObject.tiles.map(function(item, index) {
+          return <GameTile
+            key={index}
+            tileObj={item}
+            width={tileWidth}
+            height={tileHeight}
+            translateX={rightSidebarCenter - Math.round(nextObjectWidth / 2)}
+            translateY={headerHeight + 20}
+          />
+        })
+      }
+      {
+        this.state.parkingObject.tiles.map(function(item, index) {
+          return <GameTile
+            key={index}
+            tileObj={item}
+            width={tileWidth}
+            height={tileHeight}
+            translateX={leftSidebarCenter - Math.round(nextObjectWidth / 2)}
+            translateY={headerHeight + 20}
           />
         })
       }
