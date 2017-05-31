@@ -527,11 +527,12 @@ body {
   max-height: 100vh; }
 
 .big-text {
-  font-size: 20px;
-  text-shadow: 1px 1px 0 red, 2px 2px 0 red, 3px 3px 0 red; }
+  font-size: 24px;
+  text-shadow: 1px 1px 0 fuchsia, 2px 2px 0 fuchsia, 3px 3px 0 fuchsia; }
 
 .label-text {
   font-size: 8px;
-  letter-spacing: 5px; }
+  letter-spacing: 5px;
+  color: #999; }
 
 /*# sourceMappingURL=style.css.map*/
